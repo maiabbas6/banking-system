@@ -19,9 +19,7 @@ import java.util.List;
  */
 public class BankFacade {
 
-    // -------------------
-    // Security Role
-    // -------------------
+     // Security Role
     private String currentUserRole = "USER"; // Default role for demo/testing
 
     /**
@@ -32,15 +30,11 @@ public class BankFacade {
         this.currentUserRole = role;
     }
 
-    // -------------------
-    // Services
-    // -------------------
+     // Services
     private AccountService accountService;
     private AccountTransactionService transactionService;
 
-    // -------------------
-    // Design Patterns
-    // -------------------
+     // Design Patterns
     private ApprovalHandler approvalChain;
     private InterestStrategy interestStrategy;
     private List<NotificationObserver> observers;
@@ -71,9 +65,7 @@ public class BankFacade {
         // Default role already set above
     }
 
-    // -------------------
-    // Security Methods
-    // -------------------
+     // Security Methods
     private void checkAccess(String requiredRole) {
         if (!requiredRole.equals(currentUserRole)) {
             throw new SecurityException(
@@ -81,10 +73,7 @@ public class BankFacade {
             );
         }
     }
-
-    // -------------------
-    // Account Operations
-    // -------------------
+     // Account Operations
     public void openAccount(Account account) {
         checkAccess("ADMIN");
         accountService.create(account);
@@ -95,9 +84,7 @@ public class BankFacade {
         return accountService.getBalance(accountId);
     }
 
-    // -------------------
-    // Transaction Operations
-    // -------------------
+     // Transaction Operations
     public void deposit(String accountId, double amount) {
         checkAccess("USER");
         transactionService.deposit(accountId, amount);
@@ -116,9 +103,7 @@ public class BankFacade {
         notifyObservers("Transaction processed: " + transaction.getTransactionId());
     }
 
-    // -------------------
-    // Composite (Account Group)
-    // -------------------
+     // Composite (Account Group)
     public void addAccountToGroup(AccountGroup group, Account account) {
         checkAccess("ADMIN");
         group.add(account);
@@ -128,9 +113,7 @@ public class BankFacade {
         return group.getBalance();
     }
 
-    // -------------------
-    // Interest (Strategy)
-    // -------------------
+     // Interest (Strategy)
     public void setInterestStrategy(InterestStrategy strategy) {
         checkAccess("ADMIN");
         this.interestStrategy = strategy;
@@ -141,9 +124,8 @@ public class BankFacade {
         return interestStrategy.calculate(balance);
     }
 
-    // -------------------
-    // Observer
-    // -------------------
+     // Observer
+    
     public void addObserver(NotificationObserver observer) {
         observers.add(observer);
     }
