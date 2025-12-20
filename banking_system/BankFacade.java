@@ -9,63 +9,42 @@ import interest.*;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * BankFacade provides a unified interface to the banking system.
- * It coordinates multiple services and design patterns including:
- * Facade, Composite, Strategy, Chain of Responsibility, and Observer.
- *
- * Security checks are enforced at this level to control access
- * to sensitive banking operations.
- */
 public class BankFacade {
 
-     // Security Role
-    private String currentUserRole = "USER"; // Default role for demo/testing
+    private String currentUserRole = "USER"; // Default role
 
-    /**
-     * Sets the role of the current user session.
-     * @param role "USER" or "ADMIN"
-     */
-    public void setUserRole(String role) {
-        this.currentUserRole = role;
-    }
-
-     // Services
     private AccountService accountService;
     private AccountTransactionService transactionService;
 
-     // Design Patterns
     private ApprovalHandler approvalChain;
     private InterestStrategy interestStrategy;
     private List<NotificationObserver> observers;
 
-    /**
-     * Initializes the banking system facade.
-     * Sets up shared services, approval chain, default interest strategy,
-     * notification observers, and default security role.
-     */
     public BankFacade() {
-
-        // Shared services
         accountService = new AccountService();
         transactionService = new AccountTransactionService(accountService);
 
-        // Chain of Responsibility
         ApprovalHandler auto = new AutoApprovalHandler();
         ApprovalHandler manager = new ManagerApprovalHandler();
         auto.setNext(manager);
         approvalChain = auto;
 
-        // Default interest strategy
         interestStrategy = new SimpleInterestStrategy();
-
-        // Observer list
         observers = new ArrayList<>();
-
-        // Default role already set above
     }
 
-     // Security Methods
+    // Login Methods
+    public void loginAsAdmin() {
+        currentUserRole = "ADMIN";
+        System.out.println("Logged in as ADMIN");
+    }
+
+    public void loginAsUser() {
+        currentUserRole = "USER";
+        System.out.println("Logged in as USER");
+    }
+
+    // Security check
     private void checkAccess(String requiredRole) {
         if (!requiredRole.equals(currentUserRole)) {
             throw new SecurityException(
@@ -73,7 +52,8 @@ public class BankFacade {
             );
         }
     }
-     // Account Operations
+
+    // Account Operations
     public void openAccount(Account account) {
         checkAccess("ADMIN");
         accountService.create(account);
@@ -81,10 +61,14 @@ public class BankFacade {
     }
 
     public double getAccountBalance(String accountId) {
+        // Allow USER or ADMIN
+        if (!currentUserRole.equals("USER") && !currentUserRole.equals("ADMIN")) {
+            throw new SecurityException("Access denied: USER or ADMIN role required.");
+        }
         return accountService.getBalance(accountId);
     }
 
-     // Transaction Operations
+    // Transaction Operations
     public void deposit(String accountId, double amount) {
         checkAccess("USER");
         transactionService.deposit(accountId, amount);
@@ -103,29 +87,36 @@ public class BankFacade {
         notifyObservers("Transaction processed: " + transaction.getTransactionId());
     }
 
-     // Composite (Account Group)
+    // Composite
     public void addAccountToGroup(AccountGroup group, Account account) {
         checkAccess("ADMIN");
         group.add(account);
     }
 
     public double getGroupBalance(AccountGroup group) {
+        // Allow USER or ADMIN
+        if (!currentUserRole.equals("USER") && !currentUserRole.equals("ADMIN")) {
+            throw new SecurityException("Access denied: USER or ADMIN role required.");
+        }
         return group.getBalance();
     }
 
-     // Interest (Strategy)
+    // Interest (Strategy)
     public void setInterestStrategy(InterestStrategy strategy) {
         checkAccess("ADMIN");
         this.interestStrategy = strategy;
     }
 
     public double calculateInterest(String accountId) {
+        // Allow USER or ADMIN
+        if (!currentUserRole.equals("USER") && !currentUserRole.equals("ADMIN")) {
+            throw new SecurityException("Access denied: USER or ADMIN role required.");
+        }
         double balance = accountService.getBalance(accountId);
         return interestStrategy.calculate(balance);
     }
 
-     // Observer
-    
+    // Observer
     public void addObserver(NotificationObserver observer) {
         observers.add(observer);
     }
